@@ -234,9 +234,9 @@ void big_step_distribute(interaction** &clock_time_in_step, interaction* time_ar
             tmp = int((time_array[i].time - ratio*small_tau*Step)/small_tau);
         }
 
-        if(tmp < 0 || tmp > ratio) {
-            tmp = ratio;
-        }
+//        if(tmp < 0 || tmp > ratio) {
+//            tmp = ratio;
+//        }
 
         push_front(&clock_time_in_step[tmp], &time_array[i] );
         //cout<<tmp<<endl;
@@ -400,56 +400,38 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
             else {
                 if(old_e_value_classifier[tmp_right] && direction_min_loc == vertical) {
                     if(tmp_right == left) {
-                        
+                        tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
+                        move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
+                    }
+                    else if(tmp_right == right) {
+                        tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
+                        move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
+                    }
+                }
+                
+                if(old_e_value_classifier[tmp_left] && direction_min_loc == vertical) {
+                    if(tmp_left == left) {
+                      tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
+                      move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                     else if(tmp_left == right) {
-                        
+                      tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
+                      move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                 }
-                //cout<<"Horizotal"<<endl;
-                //tmp_double = (pt->time - current_time)*sqrt(energy_array[0][0] + old_e_right)/sqrt(energy_array[0][0] + energy_array[0][0]) + current_time;
-                  //move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
-            }
-            /*if(dir == vertical) {
-                tmp_right = make_pair(tmp_x, tmp_y + 1);
-                if(tmp_y != 0) {
-                    if(tmp_right.first == old_e_left_coordinate.first && tmp_right.second == old_e_left_coordinate.second) {
-                        tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/sqrt(energy_array[tmp_left.first][tmp_left.second]);
-                    }
-                    else if(tmp_right.first == old_e_right_coordinate.first && tmp_right.second == old_e_right_coordinate.second) {
-                        tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_right)/sqrt(energy_array[tmp_left.first][tmp_left.second]);
-                    }
+                
+                if(old_e_value_classifier[tmp_right] && direction_min_loc == horizontal) {
+                    tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
+                    move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                 }
-
-                if(tmp_y != M) {
-                    if(tmp_left.first == old_e_right_coordinate.first && tmp_left.second == old_e_right_coordinate.second) {
-                        tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/sqrt(energy_array[tmp_left.first][tmp_left.second]);
-                    }
-                    else if(tmp_left.first == old_e_left_coordinate.first && tmp_left.second == old_e_left_coordinate.second){
-                        tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_left)/sqrt(energy_array[tmp_right.first][tmp_right.second]);
-                    }
-
+                
+                if(old_e_value_classifier[tmp_left] && direction_min_loc == horizontal) {
+                    tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
+                    move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                 }
             }
-            else {
-                tmp_right = make_pair(tmp_x + 1, tmp_y);
-                if(tmp_right.first == old_e_left_coordinate.first && tmp_right.second == old_e_left_coordinate.second) {
-                    tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/sqrt(energy_array[tmp_left.first][tmp_left.second]);
-                }
-                else if(tmp_right.first == old_e_right_coordinate.first && tmp_right.second == old_e_right_coordinate.second) {
-                    tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_right)/sqrt(energy_array[tmp_left.first][tmp_left.second]);
-                }
-                else if(tmp_left.first == old_e_left_coordinate.first && tmp_left.second == old_e_left_coordinate.second) {
-                    tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_left)/sqrt(energy_array[tmp_right.first][tmp_right.second]);
-                }
-                else if(tmp_left.first == old_e_right_coordinate.first && tmp_left.second == old_e_right_coordinate.second) {
-                    tmp_double = (pt -> time - current_time) * sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/sqrt(energy_array[tmp_left.first][tmp_left.second]);
-                }
-            }
-            move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);*/
         }
-        //cout<<"\n";
-
+        
         //Step 3: update current time
         if(clock_time_in_step[level] != NULL)
         {
