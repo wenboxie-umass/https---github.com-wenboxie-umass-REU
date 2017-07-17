@@ -50,8 +50,6 @@ vertical:
         |------|------|
 */
 
-ofstream test_file("test_file.txt", ios::trunc);
-
 enum Direction {
     horizontal,
     vertical
@@ -70,7 +68,6 @@ struct interaction
 
 struct site {
     double previous_time;
-    double previous_energy;
     Pair coordinate;
     Double_list record;
     double summation;
@@ -148,21 +145,15 @@ List find_adjacent_clocks(int i, int j, Direction direction, int N, int M, int c
 
 double energy_summation(double **energy_array, int x, int y, Direction direction) {
     double ret = 10.0;
-    test_file<<"           energy_summation: ";
     switch (direction) {
       case vertical:
-        test_file<<"("<<int(x / 2)<<","<<y<<") , ("<<int(x / 2)<<","<<y+1<<")"<<endl;
-        test_file<<"           energy_summation() content: "<<energy_array[int(x / 2)][y]<<","<<energy_array[int(x / 2)][y + 1]<<endl;
-        ret = sqrt(energy_array[int(x / 2)][y] + energy_array[int(x / 2)][y + 1]);
+        ret = sqrt(energy_array[x / 2][y] + energy_array[x / 2][y+1]);
         break;
       case horizontal:
-        test_file<<"("<<int(x / 2)<<","<<y+1<<") , ("<<int(x / 2) + 1<<","<<y+1<<")"<<endl;
-        test_file<<"           energy_summation() content: "<<energy_array[int(x / 2)][y + 1]<<","<<energy_array[int(x / 2) + 1][y + 1]<<endl;
         ret = sqrt(energy_array[int(x / 2)][y + 1] + energy_array[int(x / 2) + 1][y + 1]);
         break;
     }
-    test_file<<"           result: "<<ret<<endl;
-    return ret;
+    return 10;
 }
 
 void print_v(double* Array, int size)
@@ -238,10 +229,10 @@ void print_list(interaction* Link)
     interaction* tmp = Link;
     while(tmp!= NULL)
     {
-        test_file<<" location: "<< tmp->location <<" time: " << tmp->time << "  " ;
+        //cout<<" location: "<< tmp->location <<" time: " << tmp->time << "  " ;
         tmp = tmp->right;
     }
-    test_file<<endl;
+    cout<<endl;
 }
 
 
@@ -283,12 +274,6 @@ void move_interaction(interaction** &clock_time_in_step, interaction* pt, const 
     double old_time = pt->time;
     int old_level, new_level;
     pt->time = new_time;
-
-    test_file<<"           In move_interaction() location: "<<pt->location<<endl;
-    test_file<<"           In move_interaction() Step: "<<Step<<" ratio: "<<ratio<<" small_tau: "<<small_tau<<endl;
-    test_file<<"           In move_interaction() condition: "<<(Step + 1)*ratio*small_tau<<endl;
-    test_file<<"           In move_interaction() old_time: "<<old_time<<endl;
-    test_file<<"           In move_interaction() new_time: "<<new_time<<endl;
     if (old_time > (Step + 1)*ratio*small_tau )
     {
         old_level = ratio;
@@ -306,9 +291,6 @@ void move_interaction(interaction** &clock_time_in_step, interaction* pt, const 
     {
         new_level = int( (new_time - Step*ratio*small_tau)/small_tau );
     }
-
-    test_file<<"           move_interaction old_level: "<<old_level<<endl;
-    test_file<<"           move_interaction new_level: "<<new_level<<endl;
     //    cout<<"start to move "<< pt->location << " from " << old_level << " to " << new_level<<endl;
     if(old_level == new_level )
     {
@@ -349,42 +331,12 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
     int tmp_x = -1;
     int tmp_y = -1;
     Direction dir = vertical;
-    
-    test_file<<"           energy_array:"<<endl;
-    for(int i = 0 ; i < N ; i ++) {
-      test_file<<"           ";
-      for(int j = 0 ; j < M + 2 ; j++) {
-        test_file<<energy_array[i][j]<<" ";
-      }
-      test_file<<endl;
-    }
-    test_file<<"           --------------------------------------"<<endl;
     //int a = 0;
     //cout<<"I'm In the Function"<<endl;
     double total_energy, tmp_double, old_e_left, old_e_right, tmp_rnd_uni;
-    test_file<<endl;
     while(current_time < next_time)
     {
         //cout<<"OK"<<a<<endl;
-//        old_e_value_classifier[left] = true;
-//        old_e_value_classifier[right] = true;
-        test_file<<endl;
-        test_file<<"           next_time: "<<next_time<<endl;
-        test_file<<"           current_time: "<<current_time<<endl;
-        test_file<<"           level: "<<level<<endl;
-        test_file<<"           Step: "<<Step<<endl;
-        test_file<<"           min_loc: "<<min_loc<<endl;
-        test_file<<"           left: "<<left.first<<","<<left.second<<" right: "<<right.first<<","<<right.second<<endl;
-        if(direction_min_loc == vertical)
-            test_file<<"           direction: vertical"<<endl;
-        else
-            test_file<<"           direction: horizontal"<<endl;
-        test_file<<"           coordinate: "<<coordinate_min_loc.first<<","<<coordinate_min_loc.second<<endl;
-        test_file<<"           adjacent_clocks: ";
-        for(iter i = adjacent_clocks_min_loc.begin() ; i != adjacent_clocks_min_loc.end() ; i++) {
-            test_file<<(*i)<<",";
-        }
-        test_file<<endl;
         (*count)++;
         // a++;
 
@@ -394,62 +346,36 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
 //        cout<<"added time = " << tmp_double << endl;
         old_e_left = (direction_min_loc == vertical) ? energy_array[x][y] : energy_array[x][y + 1];
         old_e_right = (direction_min_loc == vertical) ? energy_array[x][y + 1] : energy_array[x + 1][y + 1];
-        //Pair old_e_left_coordinate, old_e_right_coordinate;
-        //old_e_left_coordinate = (direction_min_loc == vertical) ? make_pair(x, y) : make_pair(x, y + 1);
-        //old_e_right_coordinate = (direction_min_loc == vertical) ? make_pair(x, y + 1) : make_pair(x + 1, y + 1);
+        Pair old_e_left_coordinate, old_e_right_coordinate;
+        old_e_left_coordinate = (direction_min_loc == vertical) ? make_pair(x, y) : make_pair(x, y + 1);
+        old_e_right_coordinate = (direction_min_loc == vertical) ? make_pair(x, y + 1) : make_pair(x + 1, y + 1);
         tmp_rnd_uni = u(mt);
-        test_file<<"           tmp_double: "<<tmp_double<<endl;
-        test_file<<"           old_e_left: "<<old_e_left<<endl;
-        test_file<<"           old_e_right: "<<old_e_right<<endl;
-        test_file<<"           old_e_value_classifier: "<<endl;
-        for(Dictionary::const_iterator item = old_e_value_classifier.begin() ; item != old_e_value_classifier.end() ; item++) {
-            test_file<<"             Key: ("<<(*item).first.first<<","<<(*item).first.second<<"), Value: "<<(*item).second<<endl;
-        }
-        test_file<<endl;
         if(y == 0 && direction_min_loc == vertical)
         {
-            test_file<<"           Left Edge Case"<<endl;
             total_energy = old_e_right  -log(1 - u(mt))*TL;
         }
         if(y == M && direction_min_loc == vertical)
         {
-            test_file<<"           Right Edge Case"<<endl;
             total_energy = old_e_left  -log(1 - u(mt))*TR;
         }
-        test_file<<"           total_energy: "<<total_energy<<endl;
-        test_file<<"           Updating energy_array: "<<endl;
+
         if(direction_min_loc == vertical) {
             if(y != 0) {
-                test_file<<"           At Coordinate: "<<x<<","<<y;
                 energy_array[x][y] = tmp_rnd_uni*total_energy;
-            }
-            else
-            {
-                test_file<<"           At Coordinate: Not Available";
             }
 
             if(y != M) {
-                test_file<<" And "<<x<<","<<y+1;
                 energy_array[x][y + 1] = (1 - tmp_rnd_uni)*total_energy;//update energy
-            }
-            else
-            {
-                test_file<<" And Not Available";
             }
         }
         else {
-            test_file<<"           At Coordinate: "<<x<<","<<y+1<<" And "<<x+1<<","<<y+1;
             energy_array[x][y + 1] = tmp_rnd_uni*total_energy;
             energy_array[x + 1][y + 1] = (1 - tmp_rnd_uni)*total_energy;//update energy
         }
-        test_file<<endl;
         move_interaction(clock_time_in_step, pt,small_tau,ratio, Step,  current_time + tmp_double);
-        test_file<<"           current_time + tmp_double: "<<current_time + tmp_double<<" min_loc_time: "<<pt->time<<endl;
 
         //Step 2: update other interactions
         for(iter i = adjacent_clocks_min_loc.begin() ; i != adjacent_clocks_min_loc.end() ; i++) {
-            test_file<<"           *************************"<<endl;
-            test_file<<"           Currently updating adjacent clock at index: "<<(*i)<<" Type: ";
             pt = &time_array[(*i)];
             dir = pt -> direction;
             tmp_loc = pt -> coordinate;
@@ -460,51 +386,33 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
                 tmp_left = make_pair(tmp_x, tmp_y);
                 tmp_right = make_pair(tmp_x, tmp_y + 1);
                 if(old_e_value_classifier[tmp_left] && direction_min_loc == vertical) {
-                    test_file<<"v4"<<endl;
-                    test_file<<"           Old_tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl;
                     tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                    test_file<<"           tmp_double: "<<tmp_double<<endl;
                     move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                 }
 
                 if(old_e_value_classifier[tmp_right] && direction_min_loc == vertical) {
-                    test_file<<"v3"<<endl;
-                    test_file<<"           Old_tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<endl;
                     tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                    test_file<<"           tmp_double: "<<tmp_double<<endl;
                     move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                 }
 
                 if(old_e_value_classifier[tmp_left] && direction_min_loc == horizontal) {
                     if(tmp_left == left) {
-                        test_file<<"h3"<<endl;
-                        test_file<<"           Old_tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl;
                         tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                        test_file<<"           tmp_double: "<<tmp_double<<endl;
                         move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                     else if(tmp_left == right){
-                        test_file<<"h5"<<endl;
-                        test_file<<"           Old_tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl;
                         tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                        test_file<<"           tmp_double: "<<tmp_double<<endl;
                         move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                 }
 
                 if(old_e_value_classifier[tmp_right] && direction_min_loc == horizontal) {
                     if(tmp_right == left) {
-                      test_file<<"h2"<<endl;
-                      test_file<<"           Old_tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<endl;
                       tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                      test_file<<"           tmp_double: "<<tmp_double<<endl;
                       move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
-                    else if(tmp_right == right){
-                      test_file<<"h4"<<endl;
-                      test_file<<"           Old_tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<endl;
+                    else if(tmp_left == right){
                       tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                      test_file<<"           tmp_double: "<<tmp_double<<endl;
                       move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                 }
@@ -514,71 +422,36 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
                 tmp_right = make_pair(tmp_x + 1, tmp_y + 1);
                 if(old_e_value_classifier[tmp_right] && direction_min_loc == vertical) {
                     if(tmp_right == left) {
-                        test_file<<"v1"<<endl;
-                        test_file<<"           Old_tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<endl;
                         tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                        test_file<<"           tmp_double: "<<tmp_double<<endl;
                         move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                     else if(tmp_right == right) {
-                        test_file<<"v2"<<endl;
-                        test_file<<"           Old_tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<endl;
                         tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                        test_file<<"           tmp_double: "<<tmp_double<<endl;
                         move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                 }
 
                 if(old_e_value_classifier[tmp_left] && direction_min_loc == vertical) {
                     if(tmp_left == left) {
-                      test_file<<"v5"<<endl;
-                      test_file<<"           Old_tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl;
                       tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                      test_file<<"           tmp_double: "<<tmp_double<<endl;
                       move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                     else if(tmp_left == right) {
-                      test_file<<"v6"<<endl;
-                      test_file<<"           Old_tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl;
                       tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                      test_file<<"           tmp_double: "<<tmp_double<<endl;
                       move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                     }
                 }
 
                 if(old_e_value_classifier[tmp_right] && direction_min_loc == horizontal) {
-                    test_file<<"h1"<<endl;
-                    test_file<<"           Old_tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<endl;
                     tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_left.first][tmp_left.second] + old_e_left)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                    test_file<<"           tmp_double: "<<tmp_double<<endl;
                     move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                 }
 
                 if(old_e_value_classifier[tmp_left] && direction_min_loc == horizontal) {
-                    test_file<<"h6"<<endl;
-                    test_file<<"           Old_tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl;
                     tmp_double = (pt->time - current_time)*sqrt(energy_array[tmp_right.first][tmp_right.second] + old_e_right)/energy_summation(energy_array, tmp_loc.first, tmp_loc.second, dir) + current_time;
-                    test_file<<"           tmp_double: "<<tmp_double<<endl;
                     move_interaction(clock_time_in_step, pt,small_tau,ratio, Step, tmp_double);
                 }
             }
-            test_file<<"           tmp_left: "<<tmp_left.first<<","<<tmp_left.second<<" tmp_right: "<<tmp_right.first<<","<<tmp_right.second<<endl<<endl;
-        }
-
-        test_file<<"           New Buckets:"<<endl;
-        for(int i = 0 ; i <= ratio ; i++) {
-            test_file<<"                === Bucket: "<<i<<" ==="<<endl;
-            print_list(clock_time_in_step[i]);
-            test_file<<endl;
-        }
-        test_file<<endl;
-        test_file<<"           energy_array:"<<endl;
-        for(int i = 0 ; i < N ; i ++) {
-            test_file<<"           ";
-            for(int j = 0 ; j < M + 2 ; j++) {
-                test_file<<energy_array[i][j]<<" ";
-            }
-            test_file<<endl;
         }
 
         //Step 3: update current time
@@ -586,17 +459,17 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
         {
             min_loc = find_min(clock_time_in_step[level]);
             pt = &time_array[min_loc];
-
+            
             current_time = pt->time;
-
+            
             direction_min_loc = pt -> direction;
             coordinate_min_loc = pt -> coordinate; // Find the coordinate of min_loc in 2D energy_array;
             x = coordinate_min_loc.first / 2; //Compute the x coordinate of cell that the min_loc is corresponding to.
             y = coordinate_min_loc.second;//(direction_min_loc == vertical) ? coordinate_min_loc.second : coordinate_min_loc.second + 1; //Compute the y coordinate of cell......
             adjacent_clocks_min_loc = pt -> adjacent_clocks;
-
+            
             old_e_value_classifier.clear();
-
+            
             left = (direction_min_loc == vertical) ? make_pair(x, y) : make_pair(x, y + 1);
             right = (direction_min_loc == vertical) ? make_pair(x, y + 1) : make_pair(x + 1, y + 1);
             old_e_value_classifier[left] = true;
@@ -609,9 +482,6 @@ void update(interaction** &clock_time_in_step, const int level, const int N, con
 
 
     }
-
-    test_file<<"           count: "<<(*count)<<endl;
-    test_file<<endl;
 
 }
 
@@ -656,9 +526,7 @@ int main(int argc, char** argv)
     double big_tau = 0.2;//big time step of tau leaping
     const int ratio = int(size_of_time_array/10);//ratio of big step and small step
     double small_tau = big_tau/double(ratio);//small time step
-    test_file<<"size_of_time_array: "<<size_of_time_array<<endl;
-    test_file<<"ratio: "<<ratio<<endl;
-    test_file<<"small_tau: "<<small_tau<<endl;
+
     //int size_of_energy_array = N * (M + 2); //Make the energy array in 2D
     double** energy_array = new double*[N];
     for(int i = 0 ; i < N ; i ++) {
@@ -797,41 +665,29 @@ int main(int argc, char** argv)
 
     for(int out_n = 0; out_n < Step; out_n++)
     {
-        test_file<<out_n<<endl;
+        cout<<out_n<<endl;
         //cin.ignore();
         big_step_distribute(clock_time_in_step,time_array, size_of_time_array ,small_tau,ratio,out_n);
-        test_file<<"-----------------"<<endl;
+        cout<<"-----------------"<<endl;
         // for(int i = 0 ; i < size_of_time_array ; i++) {
         //     //cout<<-log(1 - u(mt))<<endl;
         //     time_array[i].time = -log(1 - u(mt));
         // }
         //cout<<"Number Of Buckets: "<<ratio<<endl;
-        test_file<<"Iteration Start:"<<endl;
-        for(int i = 0 ; i < ratio ; i++) {
-            test_file<<"     === Bucket: "<<i<<" ==="<<endl;
-            print_list(clock_time_in_step[i]);
-            test_file<<endl;
-        }
-
-        test_file<<"Update Start:"<<endl;
         for(int in_n = 0; in_n < ratio; in_n++)
         {
             //cout<<"OK"<<out_n<<endl;
-            test_file<<"         === Updating Bucket: "<<in_n<<" ==="<<endl;
             if(clock_time_in_step[in_n]!= NULL)
             {
-                test_file<<"           -> Not NULL"<<endl;
-                min_loc = find_min(clock_time_in_step[in_n]);
+                /*min_loc = find_min(clock_time_in_step[in_n]);
                 tmp_list = find_coordinate_of_site_in_energy_array(time_array[min_loc], N, M);
                 for(P_list::iterator i = tmp_list.begin() ; i != tmp_list.end() ; i++) {
                     E_avg_profile[(*i).first][(*i).second].previous_time = time_array[min_loc].time;
-                    E_avg_profile[(*i).first][(*i).second].previous_energy = energy_array[(*i).first][(*i).second + 1];
-                }
+                }*/
                 //cout<<"OKOK: "<<in_n<<endl;
-                //cout<<min_loc<<endl;
                 update(clock_time_in_step, in_n, N, M, small_tau, ratio, out_n, time_array, energy_array, u, mt, &count);
                 //cout<<"OKOKOK1"<<endl;
-                for(P_list::iterator i = tmp_list.begin() ; i != tmp_list.end() ; i++) {
+                /*for(P_list::iterator i = tmp_list.begin() ; i != tmp_list.end() ; i++) {
 //                    if((*i).first == 0 &&  (*i).second == 0) {
 //                        //cout<<"OK";
 //                        cout<<"Info: "<<time_array[min_loc].coordinate.first<<","<<time_array[min_loc].coordinate.second<<endl;
@@ -839,11 +695,11 @@ int main(int argc, char** argv)
                     //cout<<(*i).first<<","<<(*i).second<<endl;
                     pre_time = E_avg_profile[(*i).first][(*i).second].previous_time;
                     curr_time = time_array[min_loc].time;
-                    curr_energy = E_avg_profile[(*i).first][(*i).second].previous_energy;//energy_array[(*i).first][(*i).second];
+                    curr_energy = energy_array[(*i).first][(*i).second];
                     //cout<<curr_energy * (curr_time - pre_time)<<endl;
                     E_avg_profile[(*i).first][(*i).second].record.push_back(curr_energy * (curr_time - pre_time));
                     E_avg_profile[(*i).first][(*i).second].summation += curr_energy * (curr_time - pre_time);
-                }
+                }*/
             }
         }
 
@@ -855,7 +711,7 @@ int main(int argc, char** argv)
 
     }
 
-    for(int i = 0 ; i < N ; i++) {
+    /*for(int i = 0 ; i < N ; i++) {
       for(int j = 0 ; j < M ; j++) {
         profile<<"Previous Time: "<<E_avg_profile[i][j].previous_time<<endl;
         profile<<"Coordinate: "<<E_avg_profile[i][j].coordinate.first<<","<<E_avg_profile[i][j].coordinate.second<<endl;
@@ -877,7 +733,7 @@ int main(int argc, char** argv)
           profile<<E_avg_profile[i][j].summation<<" ";
       }
       profile<<endl;
-    }
+    }*/
 
     gettimeofday(&t2, NULL);
     delete[] energy_array;
@@ -893,5 +749,4 @@ int main(int argc, char** argv)
     myfile<< 1000000*delta/double(count)<<"  ";
     myfile.close();
     profile.close();
-    test_file.close();
 }
